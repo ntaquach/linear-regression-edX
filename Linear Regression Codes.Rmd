@@ -1,0 +1,115 @@
+---
+title: "Linear Regression Codes"
+author: "Frankie de Jong"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+```
+
+```{css, echo=FALSE}
+h1, h4 {
+  text-align: center;
+  color: black;
+  font-weight: bold;
+}
+```
+
+## Section 1: Introduction to Regression/1.1: Baseball as a Motivating Example
+
+```{r load lahman library,results='hide'}
+library(Lahman)
+```
+
+### Filter Teams data frame to include years from 1961 to 2001 and Make Scatterplot of AB/G vs R/G
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+Teams %>% filter(yearID %in% 1961:2001) %>%
+    mutate(AB_per_game = AB / G, R_per_game = R / G) %>%
+    ggplot(aes(AB_per_game, R_per_game)) + 
+    geom_point(alpha = 0.5)
+```
+
+### Scatterplot of W/G vs E/G
+
+```{r}
+Teams %>% filter(yearID %in% 1961:2001) %>%
+    mutate(W_per_game = W / G, E_per_game = E / G) %>%
+    ggplot(aes(W_per_game, E_per_game)) + 
+    geom_point(alpha = 0.5)
+```
+
+### Scatterplot of XB2/G vs XB3/G
+
+```{r}
+Teams %>% filter(yearID %in% 1961:2001) %>%
+    mutate(X2B_per_game = X2B / G, X3B_per_game = X3B / G) %>%
+    ggplot(aes(X2B_per_game, X3B_per_game)) + 
+    geom_point(alpha = 0.5)
+```
+
+## Section 1: Introduction to Regression/1.2: Correlation
+
+### Correlation coefficient between AB and R per game
+
+```{r}
+Teams %>% filter(yearID %in% 1961:2001) %>%
+    mutate(AB_per_game = AB / G, R_per_game = R / G) %>%
+    summarize(r = cor(AB_per_game, R_per_game))
+```
+
+### Correlation coefficient between W and E
+
+```{r}
+Teams %>% filter(yearID %in% 1961:2001) %>%
+          mutate(W_per_game = W / G, E_per_game = E / G) %>%
+          summarize(r = cor(W_per_game, E_per_game))
+```
+
+### Correlation coefficient between X2B and X3B
+
+```{r}
+Teams %>% filter(yearID %in% 1961:2001) %>%
+          mutate(X2B_per_game = X2B / G, X3B_per_game = X3B / G) %>%
+          summarize(r = cor(X2B_per_game, X3B_per_game))
+```
+
+## Section 1: Introduction to Regression/1.3: Stratification and Variance Explained
+
+### Define female_heights
+```{r}
+set.seed(1989) #if you are using R 3.5 or earlier
+set.seed(1989, sample.kind="Rounding") #if you are using R 3.6 or later
+library(HistData)
+data("GaltonFamilies")
+
+female_heights <- GaltonFamilies%>%     
+    filter(gender == "female") %>%     
+    group_by(family) %>%     
+    sample_n(1) %>%     
+    ungroup() %>%     
+    select(mother, childHeight) %>%     
+    rename(daughter = childHeight)
+```
+
+### Calculate mean heights, sd, cor
+
+```{r}
+mu_mom <- mean(female_heights$mother)
+sd_mom <- sd(female_heights$mother)
+mu_dau <- mean(female_heights$daughter)
+sd_dau <- sd(female_heights$daughter)
+cc <- cor(female_heights$daughter, female_heights$mother)
+m <- cc*sd_dau/sd_mom  
+b <- mu_dau - m*mu_mom
+(m*2+b) - (m*1+b)
+cc*cc*100
+x = 60
+m*x+b
+```
+
